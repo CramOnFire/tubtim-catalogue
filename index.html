@@ -393,7 +393,7 @@ const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTtvHVguMqwVI
 const COL = {
   SKU:       "SKU",
   PIC:       "Pic",
-  BRAND:     "Brand",   
+  BRAND:     "Brand",
   CATEGORY:  "Category",
   NAME:      "Product Name",
   COLOR:     "Color",
@@ -465,8 +465,12 @@ function parseCSV(csv) {
   const lines = csv.trim().split('\n');
   if (lines.length < 2) { showError('ข้อมูลว่างเปล่า'); return; }
 
-  // Parse header row — handle quoted fields
-  const headers = splitCSVLine(lines[0]);
+  // Find the header row — scan until we find a line containing "SKU"
+  let headerRowIndex = 0;
+  for (let i = 0; i < Math.min(lines.length, 5); i++) {
+    if (lines[i].includes('SKU')) { headerRowIndex = i; break; }
+  }
+  const headers = splitCSVLine(lines[headerRowIndex]);
 
   // Map column names to indices
   const idx = {};
@@ -475,9 +479,9 @@ function parseCSV(csv) {
     idx[key] = i; // -1 if not found
   });
 
-  // Parse rows
+  // Parse rows — start after header row
   products = [];
-  for (let i = 1; i < lines.length; i++) {
+  for (let i = headerRowIndex + 1; i < lines.length; i++) {
     const cols = splitCSVLine(lines[i]);
     if (cols.every(c => !c.trim())) continue; // skip blank rows
 
